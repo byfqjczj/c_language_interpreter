@@ -1,0 +1,118 @@
+Due:
+    test: 1/31/2024 @ 11:59pm
+    code: 2/02/2024 @ 11:59pm
+
+Objectives:
+~~~~~~~~~~~
+
+    - Improve you C skills
+    - Think about performance
+
+Assignment:
+~~~~~~~~~~~
+
+    - Add more features to the language from p1
+    - Improve the performance of your interpreter (fastest interpreter
+      wins a prize)
+    - Donate a test case
+
+Extra features
+~~~~~~~~~~~~~~
+
+- operators (<=, <, >=, ">", "==", "!=", "&&", "||", ",", "&") with the
+  same semantics, precedence, and associativity) as their C counterparts
+
+- "if" statement (with optional "else"):
+
+    if <expression> <statement> [else <statement>]
+
+- "while" statement:
+
+    while <expression> statement
+
+- "func" expression:
+
+    func <statement>
+
+    Defines a function that runs the given statement when called.
+    All functions take exactly one uint64_t argument and return
+    one uint64_t value.
+
+    The <statement> can access the passed argument as the local
+    variable named "it"
+
+    "func" doesn't run the statement; it returns an opaque uint64_t
+    that identifies the function.
+
+- function call expression:
+
+    <identifier>(<expression>)
+
+    Calls the given function, passing it the result of evaluating
+    <expression>. The value of the whole expression is the value
+    returned by the function; 0 if there is no return
+
+- "return" statement:
+
+    return <expression>
+
+    Can only be used inside a function. Returns from the function with
+    the value of the given expression
+
+See the provided test cases for examples.
+
+Important files:
+~~~~~~~~~~~~~~~~
+
+    *.c     C files, feel free to add them, remove them, edit them, etc.
+    *.h     header files, feel free to add them, remove them, edit them, etc.
+
+How to add your test:
+~~~~~~~~~~~~~~~~~~~~~
+
+    To add your test, create 2 files:
+
+       <your CSID>.fun     contains the fun program
+       <your CSID>.ok      contains the expected output
+
+    Don't forget to commit them to git (for example):
+
+       git add <your CSID>.fun <your CSID>.ok # add the files
+       git commit -a -m "added test"          # commit your change locally
+       git push                               # push to server
+    
+Generated files:
+~~~~~~~~~~~~~~~~
+
+    for each test:
+
+        <test>.out    output from running the test
+        <test>.diff   differences between the actual and expected output
+        <test>.result pass/fail
+
+To get notifications (will be sent to <your csid>@cs.utexas.edu):
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add an empty file named "spamon" in your project directory. Don't forget
+to "git add", "git commit", "git push"
+
+To run tests:
+~~~~~~~~~~~~~
+
+    make test
+
+To make the output less noisy:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    make -s test
+
+To run one test
+~~~~~~~~~~~~~~~
+
+    make -s t0.test
+
+To run by hand
+~~~~~~~~~~~~~~
+
+    ./build/main t0.fun
+

@@ -1,0 +1,9 @@
+
+(0) What does "fastest" mean in this context? How did you measure it?
+
+(1) What did you have to do in order to make your interpreter run faster?
+
+(2) Write a simple C program that runs in 1/10th of a second on some machine.
+    How long does it take your interpreter to run a similar fun program on
+    the same machine? Try to explain the difference.
+
