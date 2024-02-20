@@ -1,7 +1,667 @@
+// libc includes (available in both C and C++)
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <ctype.h>
+// Implementation includes
+#include "slice.h"
 
-int main(int argc, char** argv) {
-    printf("make it work\n");
+    SliceToIntHashMap* s_table;
+    bool consume(const char*);
+    uint64_t expression(bool);
+    char const * program;
+    char const * current;
+  void unused(uint64_t bruh)
+  {
+    bruh = bruh;
+    return;
+  }
+  void fail() {
+    printf("failed at offset %ld\n",(size_t)(current-program));
+    printf("%s\n",current);
+    exit(1);
+  }
+
+  void end_or_fail() {
+    while (isspace(*current)) {
+      current += 1;
+      //printf("%s\n", current);
+    }
+    if (*current != 0) fail();
+  }
+
+  void consume_or_fail(const char* str) {
+    if (!consume(str)) {
+      fail();
+    }
+  }
+
+  void skip() {
+      while (isspace(*current)) {
+          current += 1;
+      }
+  }
+
+  bool consume(const char* str) {
+    skip();
+
+    size_t i = 0;
+    while (true) {
+      char const expected = str[i];
+      //printf("%s\n","Expected");
+      //printf("%c\n",expected);
+      char const found = current[i];
+      // printf("%s\n","PC");
+      //printf("%c\n", found);
+      if (expected == 0) {
+        /* survived to the end of the expected string */
+        current += i;
+        return true;
+      }
+      if (expected != found) {
+        return false;
+      }
+      // assertion: found != 0
+      i += 1;
+    }
+    
+  }
+
+  Slice* consume_identifier() {
+    skip();
+
+    if (isalpha(*current)) {
+      char * start = (char*) current;
+      do {
+        current += 1;
+      } while(isalnum(*current));
+      Slice* ptr = (Slice*) malloc(sizeof(Slice));
+      ptr->start=start;
+      ptr->len=(size_t)(current-start);
+      return ptr;
+    } else {
+      return NULL;
+    }
+  }
+
+  uint64_t* consume_literal() {
+    skip();
+
+    if (isdigit(*current)) {
+      uint64_t v = 0;
+      do {
+        v = 10*v + ((*current) - '0');
+        current += 1;
+      } while (isdigit(*current));
+      uint64_t* ptr = (uint64_t*) malloc(sizeof(uint64_t));
+      *ptr = v;
+      return ptr;
+    } else {
+      return NULL;
+    }
+  }
+
+    // The plan is to honor as many C operators as possible with
+    // the same precedence and associativity
+    // e<n> implements operators with precedence 'n' (smaller is higher)
+
+    // () [] . -> ...
+    uint64_t e1(bool effects) {
+        Slice* slicePtrTwo = consume_identifier();
+        if (slicePtrTwo!=NULL) {
+            if(effects)
+            {
+                uint64_t v = sliceToIntHashMapGet(s_table,slicePtrTwo);
+                return v;
+            }
+            else
+            {
+                return 0;
+            }
+            //printf("%ld",(long) v);
+            //free(slicePtrTwo);     
+        }
+        uint64_t* cons_litPtr = consume_literal();
+        if (cons_litPtr!=NULL) {
+            uint64_t temp = *cons_litPtr;
+            free(cons_litPtr);
+            if(effects)
+            {
+                return temp;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        if (consume("(")) {
+            if(effects)
+            {
+                uint64_t v = expression(effects);
+                consume(")");
+                return v;
+            }
+            if(!effects)
+            {
+                return 0;
+            }
+        } 
+        else {
+            fail();
+            return 0;
+        }
+        fail();
+        return 0;
+    }
+
+    // ++ -- unary+ unary- ... (Right) deprecated
+    uint64_t e2(bool effects) {
+        return e1(effects);
+    }
+
+    // * / % (Left)
+    uint64_t e3(bool effects) {
+        uint64_t v = e2(effects);
+
+        while (true) {
+            if (consume("*")) {
+                v = v * e2(effects);
+            } else if (consume("/")) {
+                uint64_t right = e2(effects);
+                v = (right == 0) ? 0 : v / right;
+            } else if (consume("%")) {
+                uint64_t right = e2(effects);
+                v = (right == 0) ? 0 : v % right;
+            } else {
+                return v;
+            }
+        }
+    }
+
+    // (Left) + -
+    uint64_t e4(bool effects) {
+        uint64_t v = e3(effects);
+        //printf("%d\n",(int)v);
+        while (true) {
+            if (consume("+")) {
+                v = v + e3(effects);
+                //printf("%d\n",(int)v);
+            } else if (consume("-")) {
+                v = v - e3(effects);
+                //printf("%d\n",(int)v);
+            } else {
+                return v;
+            }
+        }
+    }
+
+    // << >> deprecated
+    uint64_t e5(bool effects) {
+        return e4(effects);
+    }
+
+    // < <= > >=
+    uint64_t e6(bool effects) {
+        uint64_t v = e5(effects);
+        while(true) {
+            if(consume("<=")) {
+                if(v<=e5(effects))
+                {
+                    v = 1;
+                }
+                else 
+                {
+                    v = 0;
+                }
+            }
+            else if(consume("<"))  {
+                if(v<e5(effects))
+                {
+                    v = 1;
+                }
+                else 
+                {
+                    v = 0;
+                }
+            }
+            else if(consume(">=")) {
+                if(v>=e5(effects))
+                {
+                    v = 1;
+                }
+                else 
+                {
+                    v = 0;
+                }
+            }
+            else if(consume(">"))  {
+                if(v>e5(effects))
+                {
+                    v = 1;
+                }
+                else 
+                {
+                    v = 0;
+                }
+            }
+            else
+            {
+                return v;
+            }
+        }
+    }
+
+    // == !=
+    uint64_t e7(bool effects) {
+        uint64_t v = e6(effects);
+        while(true)
+        {
+            if(consume("=="))
+            {
+                if(v==e6(effects)){
+                    v=1;
+                }
+                else{
+                    v=0;
+                }
+            }
+            else if(consume("!=")){
+                if(v!=e6(effects)){
+                    v=1;
+                }
+                else{
+                    v=0;
+                }
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    // (left) &
+    uint64_t e8(bool effects) {
+        uint64_t v = e7(effects);
+        while(true)
+        {   
+            char * checkerTwo = (char *) current;
+            //printf("%c\n",*checker);
+            while(isspace(*checkerTwo))
+            {
+                checkerTwo +=1;
+            }
+            //printf("%s\n", "partition");
+            //printf("%c\n",*checker);
+            //printf("%c\n",*(checker+1));
+            if(*checkerTwo=='&' && *(checkerTwo+1)=='&')
+            {
+                //printf("%c\n",*checker);
+                //printf("%c\n",*(checker+1));
+                return v;
+            }
+            if(consume("&"))
+            {
+                //printf("%s/n","bro what the fuck");
+                v=v & e7(effects);
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    // ^
+    uint64_t e9(bool effects) {
+        uint64_t v = e8(effects);
+        while(true)
+        {
+            if(consume("^"))
+            {
+                v=v ^ e8(effects);
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    // |
+    uint64_t e10(bool effects) {
+        uint64_t v = e9(effects);
+        /*
+        char * checker = (char *) current;
+        //printf("%c\n",*checker);
+        while(*checker!=' ')
+        {
+            checker +=1;
+        }
+        //printf("%s\n", "partition");
+        //printf("%c\n",*checker);
+        //printf("%c\n",*(checker+1));
+        if(*checker=='|'&& *(checker+1)=='|')
+        {
+            //printf("%c\n",*checker);
+            //printf("%c\n",*(checker+1));
+            return v;
+        }
+        */
+        while(true)
+        {
+            char * checkerTwo = (char *) current;
+            //printf("%c\n",*checker);
+            while(isspace(*checkerTwo))
+            {
+                checkerTwo +=1;
+            }
+            //printf("%s\n", "partition");
+            //printf("%c\n",*checker);
+            //printf("%c\n",*(checker+1));
+            if(*checkerTwo=='|' && *(checkerTwo+1)=='|')
+            {
+                //printf("%c\n",*checker);
+                //printf("%c\n",*(checker+1));
+                return v;
+            }
+            if(consume("|"))
+            {
+                v=v | e9(effects);
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    // &&
+    uint64_t e11(bool effects) {
+        uint64_t v = e10(effects);
+        while(true)
+        {
+            if(consume("&&"))
+            {
+                if(v==0)
+                {
+                    v=0;
+                    uint64_t temp = e10(false);
+                    unused(temp);
+                }
+                if(v&&e10(effects)==1){
+                    v=1;
+
+                }
+                else{
+                    v=0;
+                }
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    // ||
+    uint64_t e12(bool effects) {
+        uint64_t v = e11(effects);
+        while(true)
+        {
+            if(consume("||"))
+            {
+                if(v>=1)
+                {
+                    uint64_t temp = e11(false);
+                    unused(temp);
+                    v=1;
+                }
+                if(v||e11(effects)==1){
+                    v=1;
+                }
+                else{
+                    v=0;
+                }
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    // (right with special treatment for middle expression) ?: deprecated
+    uint64_t e13(bool effects) {
+        return e12(effects);
+    }
+
+    // = += -= ... deprecated
+    uint64_t e14(bool effects) {
+        return e13(effects);
+    }
+
+    // ,
+    uint64_t e15(bool effects) {
+        uint64_t v = e14(effects);
+        while(true)
+        {
+            if(consume(","))
+            {
+                v = e14(effects);
+            }
+            else{
+                return v;
+            }
+        }
+    }
+
+    uint64_t expression(bool effects) {
+        return e15(effects);
+    }
+
+    bool statement(bool effects) {
+        if (consume("print")) {
+            // print ...
+            uint64_t v = expression(effects);
+            if (effects) {
+                printf("%ld\n",v);
+            }
+            return true;
+        }
+        if (consume("while"))
+        {
+            uint64_t toEval =  expression(effects);
+            char * toGoBack = (char*) current;
+            while(toEval>=1)
+            {
+                if(!consume("{"))
+                {
+                    statement(effects);
+                }
+                else
+                {
+                    while(!consume("}"))
+                    {
+                        statement(effects);
+                    }
+                }
+                uint64_t toEval =  expression(effects);
+                if(toEval>=1)
+                {
+                    current = toGoBack;
+                }
+            }
+        }
+        if (consume("if")) 
+        {
+            uint64_t toEval = expression(effects);
+            if(toEval>=1)
+            {
+                if(!consume("{"))
+                {
+                    statement(effects);
+                }
+                else
+                {
+                    while(!consume("}"))
+                    {
+                        statement(effects);
+                    }
+                }
+            }
+            else
+            {
+                if(!consume("{"))
+                {
+                    statement(false);
+                }
+                else
+                {
+                    while(!consume("}"))
+                    {
+                        statement(false);
+                    }
+                }
+            }
+            if(consume("else"))
+            {
+                if(toEval<1)
+                {
+                    if(!consume("{"))
+                    {
+                        statement(effects);
+                    }
+                    else
+                    {
+                        while(!consume("}"))
+                        {
+                            statement(effects);
+                        }
+                    }
+                }
+                else
+                {
+                    if(!consume("{"))
+                    {
+                        statement(false);
+                    }
+                    else
+                    {
+                        while(!consume("}"))
+                        {
+                            statement(false);
+                        }
+                    }      
+                }
+            }
+            return true;
+        }
+        Slice* slicePtrOne = consume_identifier();
+        if (slicePtrOne!=NULL) {
+            // x = ...
+            if (consume("=")) {
+                uint64_t v = expression(effects);
+                /*
+                if(effects)
+                {
+                    printf("%s\n", "true");
+                }
+                else
+                {
+                    printf("%s\n","false");
+                }
+                */
+                if (effects) {
+                    /*char* c = slicePtrOne->start;
+                    int temp = 0;
+                    while(c[temp]!=0)
+                    {
+                        printf("%c",c[temp]);
+                        temp++;
+                    }
+                    printf("%ld",v);*/
+                    sliceToIntHashMapInsert(s_table,slicePtrOne,v);
+                }
+                return true;
+            } else {
+                fail();
+            }
+        }
+        return false;
+    }
+
+    void statements(bool effects) {
+        while (statement(effects));
+    }
+
+    void run() {
+        statements(true);
+        end_or_fail();
+    }
+
+
+int main(int argc, const char *const *const argv) {
+
+    if (argc != 2) {
+        fprintf(stderr,"usage: %s <file name>\n",argv[0]);
+        exit(1);
+    }
+
+    // open the file
+    int fd = open(argv[1],O_RDONLY);
+    if (fd < 0) {
+        perror("open");
+        exit(1);
+    }
+
+    // determine its size (std::filesystem::get_size?)
+    struct stat file_stats;
+    int rc = fstat(fd,&file_stats);
+    if (rc != 0) {
+        perror("fstat");
+        exit(1);
+    }
+
+    // map the file in my address space
+    char const* prog = (char const *)mmap(
+        0,
+        file_stats.st_size,
+        PROT_READ,
+        MAP_PRIVATE,
+        fd,
+        0);
+    if (prog == MAP_FAILED) {
+        perror("mmap");
+        exit(1);
+    }
+
+    program = prog;
+    current =  prog;
+
+    s_table = createSliceToIntHashMap(1000);
+
+    
+    run();
+    /*
+    for(int i=0;i<1000;i++)
+    {
+        if(s_table->arrStart[i]!=0)
+        {
+            sliceNode* currNode = s_table->arrStart[i];
+            while(currNode!=0)
+            {
+                char* c = currNode->key->start;
+                int len = (int) currNode->key->len;
+                for(int i=0;i<len;i++)
+                {
+                    printf("%c",c[i]);
+                }
+                currNode = currNode->nextNode;
+            }
+            printf("%ld",(long)s_table->arrStart[i]->val);
+        }
+    }
+    */
     return 0;
 }
 
+// vim: tabstop=4 shiftwidth=2 expandtab
