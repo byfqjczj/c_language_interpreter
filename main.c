@@ -9,12 +9,16 @@
 #include <ctype.h>
 // Implementation includes
 #include "slice.h"
-
+    uint64_t localIt[10000];
+    char * PCtoBranch[10000];
+    int stackPointer = 0;
     SliceToIntHashMap* s_table;
     bool consume(const char*);
     uint64_t expression(bool);
     char const * program;
     char const * current;
+    uint64_t returnRegister;
+    bool statement(bool);    
   void unused(uint64_t bruh)
   {
     bruh = bruh;
@@ -45,7 +49,30 @@
           current += 1;
       }
   }
-
+  bool peek(const char* str) {
+    char * temp = (char*)current;
+    while(isspace(*temp)) {
+        temp += 1;
+    }
+    size_t i = 0;
+    while (true) {
+      char const expected = str[i];
+      //printf("%s\n","Expected");
+      //printf("%c\n",expected);
+      char const found = temp[i];
+      // printf("%s\n","PC");
+      //printf("%c\n", found);
+      if (expected == 0) {
+        /* survived to the end of the expected string */
+            return true;  
+        }
+      if (expected != found) {
+            return false;
+        }
+      // assertion: found != 0
+      i += 1;
+    }
+  }
   bool consume(const char* str) {
     skip();
 
@@ -90,7 +117,6 @@
 
   uint64_t* consume_literal() {
     skip();
-
     if (isdigit(*current)) {
       uint64_t v = 0;
       do {
@@ -111,12 +137,115 @@
 
     // () [] . -> ...
     uint64_t e1(bool effects) {
+        if(consume("it"))
+        {
+            if(!effects)
+            {
+                return 0;
+            }
+            else
+            {
+                return localIt[stackPointer];
+            }
+        }
+        if(consume("fun"))
+        {
+            if(!effects)
+            {
+                if(!consume("{"))
+                {
+                    statement(effects);
+                }
+                else
+                {
+                    while(!consume("}"))
+                    {
+                        statement(effects);
+                    }
+                }
+                return 0;
+            }
+            else
+            {
+                uint64_t functionPointerInt = (uint64_t) (current-program);
+                if(!consume("{"))
+                {
+                    statement(false);
+                }
+                else
+                {
+                    while(!consume("}"))
+                    {
+                        statement(false);
+                    }
+                }
+                return functionPointerInt;
+            }
+        }
         Slice* slicePtrTwo = consume_identifier();
         if (slicePtrTwo!=NULL) {
             if(effects)
             {
                 uint64_t v = sliceToIntHashMapGet(s_table,slicePtrTwo);
-                return v;
+                char * currNumToBranch = (char *)(v + (uint64_t) program);
+                uint64_t returnValForFunction = 0;
+                if(peek("("))
+                {
+                    
+                    while(consume("("))
+                    {
+                        stackPointer = stackPointer+1;
+                        uint64_t currExpression = expression(effects);
+                        consume(")");
+                        PCtoBranch[stackPointer] = (char *)current;
+                        localIt[stackPointer] = currExpression;
+                        current = currNumToBranch;
+                        if(!consume("{"))
+                        {
+                            bool returned = false;
+                            if(!statement(effects))
+                            {
+                                returned = true;
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        else
+                        {
+                            bool returned = false;
+                            while(!consume("}"))
+                            {
+                                if(!statement(effects))
+                                {
+                                    //printf("%s\n","reached");
+                                    returned = true;
+                                    break;
+                                }
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        returnValForFunction = returnRegister;
+                        currNumToBranch = (char *)(returnValForFunction + (uint64_t) program);
+                    }
+                    return returnValForFunction;
+                }
+                if(!consume("("))
+                {
+                    return v;
+                }
             }
             else
             {
@@ -139,6 +268,7 @@
             }
         }
         if (consume("(")) {
+            /*
             if(effects)
             {
                 uint64_t v = expression(effects);
@@ -147,8 +277,13 @@
             }
             if(!effects)
             {
+                consume(")");
                 return 0;
             }
+            */
+            uint64_t v = expression(effects);
+            consume(")");
+            return v;
         } 
         else {
             fail();
@@ -459,6 +594,57 @@
     }
 
     bool statement(bool effects) {
+        /*
+        printf("%c", *current);
+        printf("%c", *(current+1));
+        printf("%c", *(current+2));
+        printf("%c", *(current+3));
+        printf("%c\n", *(current+4));
+        printf("%d\n", effects);
+        */
+        if (consume("it")) {
+            if (consume("=")) {
+                uint64_t v = expression(effects);
+                /*
+                if(effects)
+                {
+                    printf("%s\n", "true");
+                }
+                else
+                {
+                    printf("%s\n","false");
+                }
+                */
+                if (effects) {
+                    /*char* c = slicePtrOne->start;
+                    int temp = 0;
+                    while(c[temp]!=0)
+                    {
+                        printf("%c",c[temp]);
+                        temp++;
+                    }
+                    printf("%ld",v);*/
+                    localIt[stackPointer] = v;
+                }
+                return true;
+            } else {
+                fail();
+            }
+        }
+        if (consume("return")) {
+            if(!effects)
+            {
+                expression(effects);
+                return true;
+            }
+            uint64_t toRet = expression(effects);
+            current = PCtoBranch[stackPointer];
+            PCtoBranch[stackPointer] = 0;
+            localIt[stackPointer] = 0;
+            stackPointer=stackPointer - 1;
+            returnRegister = toRet;
+            return false;
+        }
         if (consume("print")) {
             // print ...
             uint64_t v = expression(effects);
@@ -469,9 +655,16 @@
         }
         if (consume("while"))
         {
-            uint64_t toEval =  expression(effects);
+            //printf("%s\n","mark");
             char * toGoBack = (char*) current;
-            while(toEval>=1)
+            uint64_t toEval =  expression(effects);
+            /*
+            printf("%c", *current);
+            printf("%c", *(current+1));
+            printf("%c", *(current+2));
+            printf("%c", *(current+3));
+            */
+            while(toEval>=1&&effects)
             {
                 if(!consume("{"))
                 {
@@ -484,12 +677,28 @@
                         statement(effects);
                     }
                 }
-                uint64_t toEval =  expression(effects);
-                if(toEval>=1)
+                current = toGoBack;
+                toEval =  expression(effects);
+                //printf("%ld\n",toEval);
+            }
+            //printf("%s\n","reached");
+            if(toEval<1||!effects)
+            {
+                //printf("%s\n","reached2");
+                if(!consume("{"))
                 {
-                    current = toGoBack;
+                    statement(false);
+                }
+                else
+                {
+                    while(!consume("}"))
+                    {
+                        //printf("%s\n","line");
+                        statement(false);
+                    }
                 }
             }
+            return true;
         }
         if (consume("if")) 
         {
