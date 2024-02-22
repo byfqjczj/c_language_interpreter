@@ -263,7 +263,70 @@
                         statement(false);
                     }
                 }
-                return functionPointerInt;
+                if(peek("("))
+                {
+                    uint64_t v = functionPointerInt;
+                    char * currNumToBranch = (char *)(v + (uint64_t) program);
+                    uint64_t returnValForFunction = 0;
+                    while(consume("("))
+                    {
+                        //printf("%s\n","wait what?");
+                        //printf("%s\n","curr stackpointer");
+                        //printf("%d\n",stackPointer);
+                        uint64_t currExpression = expression(effects);
+                        //printf("%s\n","curr expressions");
+                        //printf("%ld\n",currExpression);
+                        consume(")");
+                        stackPointer = stackPointer+1;
+                        PCtoBranch[stackPointer] = (char *)current;
+                        localIt[stackPointer] = currExpression;
+                        current = currNumToBranch;
+                        if(!consume("{"))
+                        {
+                            bool returned = false;
+                            if(!statement(effects))
+                            {
+                                returned = true;
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        else
+                        {
+                            bool returned = false;
+                            while(!consume("}"))
+                            {
+                                if(!statement(effects))
+                                {
+                                    //printf("%s\n","reached");
+                                    returned = true;
+                                    break;
+                                }
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        returnValForFunction = returnRegister;
+                        currNumToBranch = (char *)(returnValForFunction + (uint64_t) program);
+                    }
+                    return returnValForFunction;
+                }
+                else
+                {
+                    return functionPointerInt;
+                }
             }
         }
         Slice* slicePtrTwo = consume_identifier();
@@ -389,8 +452,68 @@
                 return 0;
             }
             */
+            //printf("%s\n","hello?");
             uint64_t v = expression(effects);
             consume(")");
+            if(peek("("))
+                {
+                    char * currNumToBranch = (char *)(v + (uint64_t) program);
+                    uint64_t returnValForFunction = 0;
+                    while(consume("("))
+                    {
+                        //printf("%s\n","wait what?");
+                        //printf("%s\n","curr stackpointer");
+                        //printf("%d\n",stackPointer);
+                        uint64_t currExpression = expression(effects);
+                        //printf("%s\n","curr expressions");
+                        //printf("%ld\n",currExpression);
+                        consume(")");
+                        stackPointer = stackPointer+1;
+                        PCtoBranch[stackPointer] = (char *)current;
+                        localIt[stackPointer] = currExpression;
+                        current = currNumToBranch;
+                        if(!consume("{"))
+                        {
+                            bool returned = false;
+                            if(!statement(effects))
+                            {
+                                returned = true;
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        else
+                        {
+                            bool returned = false;
+                            while(!consume("}"))
+                            {
+                                if(!statement(effects))
+                                {
+                                    //printf("%s\n","reached");
+                                    returned = true;
+                                    break;
+                                }
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        returnValForFunction = returnRegister;
+                        currNumToBranch = (char *)(returnValForFunction + (uint64_t) program);
+                    }
+                    return returnValForFunction;
+                }
             return v;
         } 
         else {
@@ -707,10 +830,13 @@
         printf("%c", *(current+1));
         printf("%c", *(current+2));
         printf("%c", *(current+3));
-        printf("%c\n", *(current+4));
+        printf("%c", *(current+4));
+        printf("%c", *(current+5));
+        printf("%c\n", *(current+6));
         printf("%d\n", effects);
         */
         if (consume("it")) {
+            //printf("%s\n","traversed here it");
             if (consume("=")) {
                 uint64_t v = expression(effects);
                 /*
@@ -740,6 +866,7 @@
             }
         }
         if (consume("return")) {
+            //printf("%s\n","traversed here return");
             if(!effects)
             {
                 expression(effects);
@@ -755,6 +882,7 @@
             return false;
         }
         if (consume("print")) {
+            //printf("%s\n","traversed here print");
             // print ...
             uint64_t v = expression(effects);
             if (effects) {
@@ -764,6 +892,7 @@
         }
         if (consume("while"))
         {
+            //printf("%s\n","traversed here while");
             //printf("%s\n","mark");
             char * toGoBack = (char*) current;
             uint64_t toEval =  expression(effects);
@@ -777,12 +906,22 @@
             {
                 if(!consume("{"))
                 {
+                    if(peek("return"))
+                    {
+                        //printf("%s\n","saw return");
+                        return true;
+                    }
                     statement(effects);
                 }
                 else
                 {
                     while(!consume("}"))
                     {
+                        if(peek("return"))
+                        {
+                            //printf("%s\n","saw return");
+                            return true;
+                        }
                         statement(effects);
                     }
                 }
@@ -811,18 +950,29 @@
         }
         if (consume("if")) 
         {
+            //printf("%s\n","traversed here if");
             //printf("%s\n","reached");
             uint64_t toEval = expression(effects);
             if(toEval>=1)
             {
                 if(!consume("{"))
                 {
+                    if(peek("return"))
+                    {
+                        //printf("%s\n","saw return");
+                        return true;
+                    }
                     statement(effects);
                 }
                 else
                 {
                     while(!consume("}"))
-                    {
+                    {   
+                        if(peek("return"))
+                        {
+                        //printf("%s\n","saw return");
+                            return true;
+                        } 
                         statement(effects);
                     }
                 }
@@ -847,12 +997,22 @@
                 {
                     if(!consume("{"))
                     {
+                        if(peek("return"))
+                        {
+                            //printf("%s\n","saw return");
+                            return true;
+                        }
                         statement(effects);
                     }
                     else
                     {
                         while(!consume("}"))
                         {
+                            if(peek("return"))
+                            {
+                                //printf("%s\n","saw return");
+                                return true;
+                            }
                             statement(effects);
                         }
                     }
@@ -876,6 +1036,7 @@
         }
         Slice* slicePtrOne = consume_identifier();
         if (slicePtrOne!=NULL) {
+            //printf("%s\n","traversed here slice");
             // x = ...
             if (consume("=")) {
                 uint64_t v = expression(effects);
@@ -905,11 +1066,15 @@
                 fail();
             }
         }
+        //printf("%s\n","fail here");
         return false;
     }
 
     void statements(bool effects) {
-        while (statement(effects));
+        while (statement(effects))
+        {
+            //printf("%s\n","effects here is true");
+        }
     }
 
     void run() {
