@@ -75,7 +75,7 @@
   }
   bool consume(const char* str) {
     skip();
-
+    //printf("%s\n",str);
     size_t i = 0;
     while (true) {
       char const expected = str[i];
@@ -137,6 +137,7 @@
 
     // () [] . -> ...
     uint64_t e1(bool effects) {
+        //printf("%s\n","test");
         if(consume("it"))
         {
             if(!effects)
@@ -145,6 +146,10 @@
             }
             else
             {
+                //printf("%s\n","curr SP");
+                //printf("%d\n",stackPointer);
+                //printf("%s\n", "returned it");
+                //printf("%ld\n",localIt[stackPointer]);
                 return localIt[stackPointer];
             }
         }
@@ -194,9 +199,14 @@
                     
                     while(consume("("))
                     {
-                        stackPointer = stackPointer+1;
+                        //printf("%s\n","wait what?");
+                        //printf("%s\n","curr stackpointer");
+                        //printf("%d\n",stackPointer);
                         uint64_t currExpression = expression(effects);
+                        //printf("%s\n","curr expressions");
+                        //printf("%ld\n",currExpression);
                         consume(")");
+                        stackPointer = stackPointer+1;
                         PCtoBranch[stackPointer] = (char *)current;
                         localIt[stackPointer] = currExpression;
                         current = currNumToBranch;
@@ -242,13 +252,18 @@
                     }
                     return returnValForFunction;
                 }
-                if(!consume("("))
-                {
-                    return v;
-                }
+                
             }
             else
             {
+                if(peek("("))
+                {
+                    while(consume("("))
+                    {
+                        expression(effects);
+                        consume(")");
+                    }    
+                }
                 return 0;
             }
             //printf("%ld",(long) v);
@@ -643,6 +658,7 @@
             localIt[stackPointer] = 0;
             stackPointer=stackPointer - 1;
             returnRegister = toRet;
+            //printf("%ld\n",toRet);
             return false;
         }
         if (consume("print")) {
@@ -702,6 +718,7 @@
         }
         if (consume("if")) 
         {
+            //printf("%s\n","reached");
             uint64_t toEval = expression(effects);
             if(toEval>=1)
             {
