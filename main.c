@@ -20,10 +20,10 @@
     uint64_t returnRegister;
     bool statement(bool);    
   void unused(uint64_t bruh)
-  {
-    bruh = bruh;
-    return;
-  }
+    {
+        bruh = bruh;
+        return;
+    }
   void fail() {
     printf("failed at offset %ld\n",(size_t)(current-program));
     printf("%s\n",current);
@@ -192,11 +192,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         else
@@ -213,11 +220,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         returnValForFunction = returnRegister;
@@ -306,11 +320,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         else
@@ -327,11 +348,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         returnValForFunction = returnRegister;
@@ -415,11 +443,18 @@
                             }
                             if(!returned)
                             {   
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         returnValForFunction = returnRegister;
@@ -504,11 +539,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         else
@@ -525,11 +567,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         returnValForFunction = returnRegister;
