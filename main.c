@@ -142,10 +142,89 @@
         {
             if(!effects)
             {
+                if(peek("("))
+                {
+                    while(consume("("))
+                    {
+                        expression(effects);
+                        consume(")");
+                    }    
+                }
                 return 0;
             }
             else
             {
+                uint64_t v = localIt[stackPointer];
+                char * currNumToBranch = (char *)(v + (uint64_t) program);
+                uint64_t returnValForFunction = 0;
+                //printf("%s\n","sliceName");
+                /*
+                for(int i=0;i<slicePtrTwo->len;i++)
+                {
+                    printf("%c",*(slicePtrTwo->start+i));
+                }
+                */
+                //printf("%s\n"," ");
+                //printf("%s\n","slice value");
+                //printf("%ld\n",v);
+                if(peek("("))
+                {
+                    
+                    while(consume("("))
+                    {
+                        //printf("%s\n","wait what?");
+                        //printf("%s\n","curr stackpointer");
+                        //printf("%d\n",stackPointer);
+                        uint64_t currExpression = expression(effects);
+                        //printf("%s\n","curr expressions");
+                        //printf("%ld\n",currExpression);
+                        consume(")");
+                        stackPointer = stackPointer+1;
+                        PCtoBranch[stackPointer] = (char *)current;
+                        localIt[stackPointer] = currExpression;
+                        current = currNumToBranch;
+                        if(!consume("{"))
+                        {
+                            bool returned = false;
+                            if(!statement(effects))
+                            {
+                                returned = true;
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        else
+                        {
+                            bool returned = false;
+                            while(!consume("}"))
+                            {
+                                if(!statement(effects))
+                                {
+                                    //printf("%s\n","reached");
+                                    returned = true;
+                                    break;
+                                }
+                            }
+                            if(!returned)
+                            {
+                                current = PCtoBranch[stackPointer];
+                                PCtoBranch[stackPointer] = 0;
+                                localIt[stackPointer] = 0;
+                                stackPointer=stackPointer-1;
+                                returnRegister = 0;
+                            }
+                        }
+                        returnValForFunction = returnRegister;
+                        currNumToBranch = (char *)(returnValForFunction + (uint64_t) program);
+                    }
+                    return returnValForFunction;
+                }
                 //printf("%s\n","curr SP");
                 //printf("%d\n",stackPointer);
                 //printf("%s\n", "returned it");
@@ -195,10 +274,12 @@
                 char * currNumToBranch = (char *)(v + (uint64_t) program);
                 uint64_t returnValForFunction = 0;
                 //printf("%s\n","sliceName");
+                /*
                 for(int i=0;i<slicePtrTwo->len;i++)
                 {
-                    //printf("%c",*(slicePtrTwo->start+i));
+                    printf("%c",*(slicePtrTwo->start+i));
                 }
+                */
                 //printf("%s\n"," ");
                 //printf("%s\n","slice value");
                 //printf("%ld\n",v);
