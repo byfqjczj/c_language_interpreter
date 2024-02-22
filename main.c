@@ -239,12 +239,28 @@
                 if(!consume("{"))
                 {
                     statement(effects);
+                    if(peek("("))
+                    {
+                        while(consume("("))
+                        {
+                            expression(effects);
+                            consume(")");
+                        }    
+                    }
                 }
                 else
                 {
                     while(!consume("}"))
                     {
                         statement(effects);
+                    }
+                    if(peek("("))
+                    {
+                        while(consume("("))
+                        {
+                            expression(effects);
+                            consume(")");
+                        }    
                     }
                 }
                 return 0;
@@ -371,11 +387,18 @@
                             }
                             if(!returned)
                             {
-                                current = PCtoBranch[stackPointer];
-                                PCtoBranch[stackPointer] = 0;
-                                localIt[stackPointer] = 0;
-                                stackPointer=stackPointer-1;
-                                returnRegister = 0;
+                                if(peek("return"))
+                                {
+                                    statement(effects);
+                                }
+                                else
+                                {
+                                    current = PCtoBranch[stackPointer];
+                                    PCtoBranch[stackPointer] = 0;
+                                    localIt[stackPointer] = 0;
+                                    stackPointer=stackPointer-1;
+                                    returnRegister = 0;
+                                }
                             }
                         }
                         else
@@ -391,7 +414,7 @@
                                 }
                             }
                             if(!returned)
-                            {
+                            {   
                                 current = PCtoBranch[stackPointer];
                                 PCtoBranch[stackPointer] = 0;
                                 localIt[stackPointer] = 0;
@@ -749,15 +772,13 @@
         {
             if(consume("&&"))
             {
-                if(v==0)
+                if(v<1)
                 {
                     v=0;
-                    uint64_t temp = e10(false);
-                    unused(temp);
+                    e10(false);
                 }
-                if(v&&e10(effects)==1){
+                else if(v&&e10(effects)){
                     v=1;
-
                 }
                 else{
                     v=0;
@@ -778,11 +799,10 @@
             {
                 if(v>=1)
                 {
-                    uint64_t temp = e11(false);
-                    unused(temp);
+                    e11(false);
                     v=1;
                 }
-                if(v||e11(effects)==1){
+                else if(v||e11(effects)==1){
                     v=1;
                 }
                 else{
@@ -953,22 +973,27 @@
             //printf("%s\n","traversed here if");
             //printf("%s\n","reached");
             uint64_t toEval = expression(effects);
-            if(toEval>=1)
+            //printf("%s\n","if val");
+            //printf("%ld\n",toEval);
+            if(toEval)
             {
                 if(!consume("{"))
                 {
-                    if(peek("return"))
+                    //printf("%s\n","traversed here if block");
+                    if(peek("return")&&effects)
                     {
                         //printf("%s\n","saw return");
+                        //printf("%c\n", *current);
                         return true;
                     }
                     statement(effects);
                 }
                 else
                 {
+                    
                     while(!consume("}"))
                     {   
-                        if(peek("return"))
+                        if(peek("return")&&effects)
                         {
                         //printf("%s\n","saw return");
                             return true;
@@ -997,7 +1022,7 @@
                 {
                     if(!consume("{"))
                     {
-                        if(peek("return"))
+                        if(peek("return")&&effects)
                         {
                             //printf("%s\n","saw return");
                             return true;
@@ -1008,7 +1033,7 @@
                     {
                         while(!consume("}"))
                         {
-                            if(peek("return"))
+                            if(peek("return")&&effects)
                             {
                                 //printf("%s\n","saw return");
                                 return true;
@@ -1073,7 +1098,7 @@
     void statements(bool effects) {
         while (statement(effects))
         {
-            //printf("%s\n","effects here is true");
+            //printf("%s\n","new statement");
         }
     }
 
