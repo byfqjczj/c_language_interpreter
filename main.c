@@ -194,6 +194,14 @@
                 uint64_t v = sliceToIntHashMapGet(s_table,slicePtrTwo);
                 char * currNumToBranch = (char *)(v + (uint64_t) program);
                 uint64_t returnValForFunction = 0;
+                //printf("%s\n","sliceName");
+                for(int i=0;i<slicePtrTwo->len;i++)
+                {
+                    //printf("%c",*(slicePtrTwo->start+i));
+                }
+                //printf("%s\n"," ");
+                //printf("%s\n","slice value");
+                //printf("%ld\n",v);
                 if(peek("("))
                 {
                     
@@ -251,6 +259,10 @@
                         currNumToBranch = (char *)(returnValForFunction + (uint64_t) program);
                     }
                     return returnValForFunction;
+                }
+                else
+                {
+                    return v;
                 }
                 
             }
