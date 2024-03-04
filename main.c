@@ -9,6 +9,9 @@
 #include <ctype.h>
 // Implementation includes
 #include "slice.h"
+//this initalizes the global variables, the stack is implemented by creating two large arrays that stores the PC of each stack and the localIt of each function call.
+//the stack pointer is initialized to 0(SP), and everytime a function is added to the call stack, it gets incremented and vice versa.
+//global it is done by reserving localIt[0] for the global variation of the it variable
     uint64_t localIt[10000];
     char * PCtoBranch[10000];
     int stackPointer = 0;
@@ -49,6 +52,7 @@
           current += 1;
       }
   }
+  //this peeks at the next string, and returning true is the str that we want is peeked
   bool peek(const char* str) {
     char * temp = (char*)current;
     while(isspace(*temp)) {
@@ -136,8 +140,13 @@
     // e<n> implements operators with precedence 'n' (smaller is higher)
 
     // () [] . -> ...
+    
+    //the logic here is that if effects is true, then we would actually evalute the logic. If it is false, we would just increment the PC until effects is true.
+
     uint64_t e1(bool effects) {
         //printf("%s\n","test");
+        //the logic here checks for the case where IT is called.
+        //honored by checking the stackPointer and then returning it from the localIt array
         if(consume("it"))
         {
             if(!effects)
@@ -246,6 +255,9 @@
                 return localIt[stackPointer];
             }
         }
+        //fun is served only a sentinel that would not relate to function calls. The actiosn calls will be done if we detect a parenthesis.
+        //fun basically tells us to store the pointer to the content after fun if effects is true.
+        //when a parenthesis is peeked and we know it is calling a function, we would jump to the pointer stored in the opaque uint64 variables that is stored for functions.
         if(consume("fun"))
         {
             if(!effects)
@@ -600,7 +612,7 @@
     uint64_t e2(bool effects) {
         return e1(effects);
     }
-
+    
     // * / % (Left)
     uint64_t e3(bool effects) {
         uint64_t v = e2(effects);
@@ -641,6 +653,9 @@
     uint64_t e5(bool effects) {
         return e4(effects);
     }
+
+    //all the other arithematic/logical stuff is implemented the same was as the starter code.
+    //a recursive call to the left, and then a recursive call to the right.
 
     // < <= > >=
     uint64_t e6(bool effects) {
@@ -813,7 +828,7 @@
             }
         }
     }
-
+    //short circuiting is done through an if statement, which would render the other half to have a false effect(only increment PC).
     // &&
     uint64_t e11(bool effects) {
         uint64_t v = e10(effects);
@@ -904,6 +919,7 @@
         printf("%c\n", *(current+6));
         printf("%d\n", effects);
         */
+        //this deals with it as the start of a statement(aka a varaible), essentially implemented by just treating it as variable.
         if (consume("it")) {
             //printf("%s\n","traversed here it");
             if (consume("=")) {
@@ -934,6 +950,7 @@
                 fail();
             }
         }
+        //code here decrements the stack pointer, and then write the return value to the return register.
         if (consume("return")) {
             //printf("%s\n","traversed here return");
             if(!effects)
@@ -959,6 +976,7 @@
             }
             return true;
         }
+        //the while block here keeps a pointer to the start, and then constantly jumps to it until the logic fails
         if (consume("while"))
         {
             //printf("%s\n","traversed here while");
@@ -1017,6 +1035,8 @@
             }
             return true;
         }
+        //the if block would have effects treated as "true" if the logic inside is evaluated to be true, and vice verse.
+        //else is implemented the same way
         if (consume("if")) 
         {
             //printf("%s\n","traversed here if");
