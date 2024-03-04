@@ -1,9 +1,25 @@
-
 (0) What does "fastest" mean in this context? How did you measure it?
-
+The fastest mean in the context of interpretation is for your interpreter to generate the correct output while taking less time than all the other interpreters.
+Fastness can be measured by using a piece of fun code as benchmark, and then have this same piece of fun code to be interperted by many different interpreters, and then see which interpreter can generate the correct result with the smallest amount fo time.
 (1) What did you have to do in order to make your interpreter run faster?
-
+Some things that I did to make my interpreter run faster includes utilizing the effects variable to make sure that while loops are not being constantly executed and ignored when effects is false.
+Another thing that I did to make my interpreter run faster is implementing short-circuiting, which improves correctness and made sure that obsolete piece of fun code were not ran. 
 (2) Write a simple C program that runs in 1/10th of a second on some machine.
     How long does it take your interpreter to run a similar fun program on
     the same machine? Try to explain the difference.
+Simple C Program that takes 1/10th of a second:
 
+#include <stdio.h>
+#include <time.h>
+
+int main() {
+    int i = 0;
+    while(i<50000000)
+    {
+        i=i+1;
+    }
+    return 0;
+}
+The interpreter took more than 10 seconds and timed out.
+The differnece is probably because my interpreter is very slow is because the code has to be read line by line during execution, which makes loops very inefficient as every loop iteration you have to interpret the FUN code, and then execute it, even though every iteration you are pretty much interpreting the same thing.
+Compared to a compiled language, which turns the while loop into machine code, which are usually optimized by the compiler such that there are no unnecessary overhead during runtime.
