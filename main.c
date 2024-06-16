@@ -36,7 +36,6 @@
   void end_or_fail() {
     while (isspace(*current)) {
       current += 1;
-      //printf("%s\n", current);
     }
     if (*current != 0) fail();
   }
@@ -61,11 +60,7 @@
     size_t i = 0;
     while (true) {
       char const expected = str[i];
-      //printf("%s\n","Expected");
-      //printf("%c\n",expected);
       char const found = temp[i];
-      // printf("%s\n","PC");
-      //printf("%c\n", found);
       if (expected == 0) {
         /* survived to the end of the expected string */
             return true;  
@@ -83,11 +78,7 @@
     size_t i = 0;
     while (true) {
       char const expected = str[i];
-      //printf("%s\n","Expected");
-      //printf("%c\n",expected);
       char const found = current[i];
-      // printf("%s\n","PC");
-      //printf("%c\n", found);
       if (expected == 0) {
         /* survived to the end of the expected string */
         current += i;
@@ -166,27 +157,12 @@
                 uint64_t v = localIt[stackPointer];
                 char * currNumToBranch = (char *)(v + (uint64_t) program);
                 uint64_t returnValForFunction = 0;
-                //printf("%s\n","sliceName");
-                /*
-                for(int i=0;i<slicePtrTwo->len;i++)
-                {
-                    printf("%c",*(slicePtrTwo->start+i));
-                }
-                */
-                //printf("%s\n"," ");
-                //printf("%s\n","slice value");
-                //printf("%ld\n",v);
                 if(peek("("))
                 {
                     
                     while(consume("("))
                     {
-                        //printf("%s\n","wait what?");
-                        //printf("%s\n","curr stackpointer");
-                        //printf("%d\n",stackPointer);
                         uint64_t currExpression = expression(effects);
-                        //printf("%s\n","curr expressions");
-                        //printf("%ld\n",currExpression);
                         consume(")");
                         stackPointer = stackPointer+1;
                         PCtoBranch[stackPointer] = (char *)current;
@@ -222,7 +198,6 @@
                             {
                                 if(!statement(effects))
                                 {
-                                    //printf("%s\n","reached");
                                     returned = true;
                                     break;
                                 }
@@ -248,10 +223,6 @@
                     }
                     return returnValForFunction;
                 }
-                //printf("%s\n","curr SP");
-                //printf("%d\n",stackPointer);
-                //printf("%s\n", "returned it");
-                //printf("%ld\n",localIt[stackPointer]);
                 return localIt[stackPointer];
             }
         }
@@ -312,12 +283,7 @@
                     uint64_t returnValForFunction = 0;
                     while(consume("("))
                     {
-                        //printf("%s\n","wait what?");
-                        //printf("%s\n","curr stackpointer");
-                        //printf("%d\n",stackPointer);
                         uint64_t currExpression = expression(effects);
-                        //printf("%s\n","curr expressions");
-                        //printf("%ld\n",currExpression);
                         consume(")");
                         stackPointer = stackPointer+1;
                         PCtoBranch[stackPointer] = (char *)current;
@@ -353,7 +319,6 @@
                             {
                                 if(!statement(effects))
                                 {
-                                    //printf("%s\n","reached");
                                     returned = true;
                                     break;
                                 }
@@ -392,27 +357,12 @@
                 uint64_t v = sliceToIntHashMapGet(s_table,slicePtrTwo);
                 char * currNumToBranch = (char *)(v + (uint64_t) program);
                 uint64_t returnValForFunction = 0;
-                //printf("%s\n","sliceName");
-                /*
-                for(int i=0;i<slicePtrTwo->len;i++)
-                {
-                    printf("%c",*(slicePtrTwo->start+i));
-                }
-                */
-                //printf("%s\n"," ");
-                //printf("%s\n","slice value");
-                //printf("%ld\n",v);
                 if(peek("("))
                 {
                     
                     while(consume("("))
                     {
-                        //printf("%s\n","wait what?");
-                        //printf("%s\n","curr stackpointer");
-                        //printf("%d\n",stackPointer);
                         uint64_t currExpression = expression(effects);
-                        //printf("%s\n","curr expressions");
-                        //printf("%ld\n",currExpression);
                         consume(")");
                         stackPointer = stackPointer+1;
                         PCtoBranch[stackPointer] = (char *)current;
@@ -448,7 +398,6 @@
                             {
                                 if(!statement(effects))
                                 {
-                                    //printf("%s\n","reached");
                                     returned = true;
                                     break;
                                 }
@@ -491,9 +440,7 @@
                     }    
                 }
                 return 0;
-            }
-            //printf("%ld",(long) v);
-            //free(slicePtrTwo);     
+            }   
         }
         uint64_t* cons_litPtr = consume_literal();
         if (cons_litPtr!=NULL) {
@@ -509,20 +456,6 @@
             }
         }
         if (consume("(")) {
-            /*
-            if(effects)
-            {
-                uint64_t v = expression(effects);
-                consume(")");
-                return v;
-            }
-            if(!effects)
-            {
-                consume(")");
-                return 0;
-            }
-            */
-            //printf("%s\n","hello?");
             uint64_t v = expression(effects);
             consume(")");
             if(peek("("))
@@ -531,12 +464,7 @@
                     uint64_t returnValForFunction = 0;
                     while(consume("("))
                     {
-                        //printf("%s\n","wait what?");
-                        //printf("%s\n","curr stackpointer");
-                        //printf("%d\n",stackPointer);
                         uint64_t currExpression = expression(effects);
-                        //printf("%s\n","curr expressions");
-                        //printf("%ld\n",currExpression);
                         consume(")");
                         stackPointer = stackPointer+1;
                         PCtoBranch[stackPointer] = (char *)current;
@@ -572,7 +500,6 @@
                             {
                                 if(!statement(effects))
                                 {
-                                    //printf("%s\n","reached");
                                     returned = true;
                                     break;
                                 }
@@ -742,23 +669,16 @@
         while(true)
         {   
             char * checkerTwo = (char *) current;
-            //printf("%c\n",*checker);
             while(isspace(*checkerTwo))
             {
                 checkerTwo +=1;
             }
-            //printf("%s\n", "partition");
-            //printf("%c\n",*checker);
-            //printf("%c\n",*(checker+1));
             if(*checkerTwo=='&' && *(checkerTwo+1)=='&')
             {
-                //printf("%c\n",*checker);
-                //printf("%c\n",*(checker+1));
                 return v;
             }
             if(consume("&"))
             {
-                //printf("%s/n","bro what the fuck");
                 v=v & e7(effects);
             }
             else{
@@ -785,38 +705,15 @@
     // |
     uint64_t e10(bool effects) {
         uint64_t v = e9(effects);
-        /*
-        char * checker = (char *) current;
-        //printf("%c\n",*checker);
-        while(*checker!=' ')
-        {
-            checker +=1;
-        }
-        //printf("%s\n", "partition");
-        //printf("%c\n",*checker);
-        //printf("%c\n",*(checker+1));
-        if(*checker=='|'&& *(checker+1)=='|')
-        {
-            //printf("%c\n",*checker);
-            //printf("%c\n",*(checker+1));
-            return v;
-        }
-        */
         while(true)
         {
             char * checkerTwo = (char *) current;
-            //printf("%c\n",*checker);
             while(isspace(*checkerTwo))
             {
                 checkerTwo +=1;
             }
-            //printf("%s\n", "partition");
-            //printf("%c\n",*checker);
-            //printf("%c\n",*(checker+1));
             if(*checkerTwo=='|' && *(checkerTwo+1)=='|')
             {
-                //printf("%c\n",*checker);
-                //printf("%c\n",*(checker+1));
                 return v;
             }
             if(consume("|"))
@@ -909,40 +806,14 @@
     }
 
     bool statement(bool effects) {
-        /*
-        printf("%c", *current);
-        printf("%c", *(current+1));
-        printf("%c", *(current+2));
-        printf("%c", *(current+3));
-        printf("%c", *(current+4));
-        printf("%c", *(current+5));
-        printf("%c\n", *(current+6));
-        printf("%d\n", effects);
-        */
+
         //this deals with it as the start of a statement(aka a varaible), essentially implemented by just treating it as variable.
         if (consume("it")) {
             //printf("%s\n","traversed here it");
             if (consume("=")) {
                 uint64_t v = expression(effects);
-                /*
-                if(effects)
-                {
-                    printf("%s\n", "true");
-                }
-                else
-                {
-                    printf("%s\n","false");
-                }
-                */
                 if (effects) {
-                    /*char* c = slicePtrOne->start;
-                    int temp = 0;
-                    while(c[temp]!=0)
-                    {
-                        printf("%c",c[temp]);
-                        temp++;
-                    }
-                    printf("%ld",v);*/
+
                     localIt[stackPointer] = v;
                 }
                 return true;
@@ -952,7 +823,6 @@
         }
         //code here decrements the stack pointer, and then write the return value to the return register.
         if (consume("return")) {
-            //printf("%s\n","traversed here return");
             if(!effects)
             {
                 expression(effects);
@@ -964,11 +834,9 @@
             localIt[stackPointer] = 0;
             stackPointer=stackPointer - 1;
             returnRegister = toRet;
-            //printf("%ld\n",toRet);
             return false;
         }
         if (consume("print")) {
-            //printf("%s\n","traversed here print");
             // print ...
             uint64_t v = expression(effects);
             if (effects) {
@@ -979,23 +847,14 @@
         //the while block here keeps a pointer to the start, and then constantly jumps to it until the logic fails
         if (consume("while"))
         {
-            //printf("%s\n","traversed here while");
-            //printf("%s\n","mark");
             char * toGoBack = (char*) current;
             uint64_t toEval =  expression(effects);
-            /*
-            printf("%c", *current);
-            printf("%c", *(current+1));
-            printf("%c", *(current+2));
-            printf("%c", *(current+3));
-            */
             while(toEval>=1&&effects)
             {
                 if(!consume("{"))
                 {
                     if(peek("return"))
                     {
-                        //printf("%s\n","saw return");
                         return true;
                     }
                     statement(effects);
@@ -1006,7 +865,6 @@
                     {
                         if(peek("return"))
                         {
-                            //printf("%s\n","saw return");
                             return true;
                         }
                         statement(effects);
@@ -1014,9 +872,7 @@
                 }
                 current = toGoBack;
                 toEval =  expression(effects);
-                //printf("%ld\n",toEval);
             }
-            //printf("%s\n","reached");
             if(toEval<1||!effects)
             {
                 //printf("%s\n","reached2");
@@ -1219,6 +1075,8 @@ int main(int argc, const char *const *const argv) {
 
     
     run();
+    //current = prog;
+    //run();
     /*
     for(int i=0;i<1000;i++)
     {
