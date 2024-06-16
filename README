@@ -1,23 +1,18 @@
-Due:
-    test: 1/31/2024 @ 11:59pm
-    code: 2/02/2024 @ 11:59pm
+Intepreter for a simple language:
+The language has no formal definition. It is defined by the given interpreter
+ - all values are encoded as 64 bit unsigned binary numbers
+ - print <expression>      // prints the value of the expression
+                               // as a 64 bit unsigned quantity
 
-Objectives:
-~~~~~~~~~~~
+-  <identifier> = <expression> // assign the value of the expression
+                                   // to the identifier
+- operators are +, -, *, /, %. Same precedence, associativity, and
+      semantics as C
 
-    - Improve you C skills
-    - Think about performance
+- '(' and ')' are used to change precedence
 
-Assignment:
-~~~~~~~~~~~
-
-    - Add more features to the language from p1
-    - Improve the performance of your interpreter (fastest interpreter
-      wins a prize)
-    - Donate a test case
-
-Extra features
-~~~~~~~~~~~~~~
+- identifiers must start with an alphabetic character and contain
+      alphanumeric characters
 
 - operators (<=, <, >=, ">", "==", "!=", "&&", "||", ",", "&") with the
   same semantics, precedence, and associativity) as their C counterparts
@@ -59,42 +54,7 @@ Extra features
     Can only be used inside a function. Returns from the function with
     the value of the given expression
 
-See the provided test cases for examples.
-
-Important files:
-~~~~~~~~~~~~~~~~
-
-    *.c     C files, feel free to add them, remove them, edit them, etc.
-    *.h     header files, feel free to add them, remove them, edit them, etc.
-
-How to add your test:
-~~~~~~~~~~~~~~~~~~~~~
-
-    To add your test, create 2 files:
-
-       <your CSID>.fun     contains the fun program
-       <your CSID>.ok      contains the expected output
-
-    Don't forget to commit them to git (for example):
-
-       git add <your CSID>.fun <your CSID>.ok # add the files
-       git commit -a -m "added test"          # commit your change locally
-       git push                               # push to server
-    
-Generated files:
-~~~~~~~~~~~~~~~~
-
-    for each test:
-
-        <test>.out    output from running the test
-        <test>.diff   differences between the actual and expected output
-        <test>.result pass/fail
-
-To get notifications (will be sent to <your csid>@cs.utexas.edu):
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Add an empty file named "spamon" in your project directory. Don't forget
-to "git add", "git commit", "git push"
+Test cases end with .fun, can be used to test the correctness of the interpreter.
 
 To run tests:
 ~~~~~~~~~~~~~
